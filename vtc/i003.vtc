@@ -8,14 +8,12 @@ varnishtest "Verify configuration reload."
 # We start with a faulty configuration, set the port to 6000 initially
 # while varnish is configured on 6001.
 shell {
-    rm -rf ${tmpdir}/caches.ini
-    touch ${tmpdir}/caches.ini
     echo "[test]\n"\
-    "Cache1 = http://localhost:6000" > ${tmpdir}/caches.ini
+    "Cache1 = http://localhost:6000" > caches.ini
 }
 
 process p0 {
-    broadcaster -cfg ${tmpdir}/caches.ini --enforce
+    ${broadcaster} -cfg caches.ini --enforce
 } -start
 
 server s1 {
@@ -51,9 +49,8 @@ client c1 -connect 127.0.0.1:8088 {
 # Rewrite the config file with a valid cache and signal
 # the broadcaster to reload.
 shell {
-    rm -rf ${tmpdir}/caches.ini
-    touch ${tmpdir}/caches.ini
-    echo "[test]\nCache1 = http://localhost:6001" > ${tmpdir}/caches.ini
+    rm -f caches.ini
+    echo "[test]\nCache1 = http://localhost:6001" > caches.ini
     kill -1 ${p0_pid}
 }
 

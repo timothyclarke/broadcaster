@@ -7,16 +7,14 @@ varnishtest "Verify simple requests with enforce mode on."
 
 # prepare some configuration.
 shell {
-    rm -rf ${tmpdir}/caches.ini
-    touch ${tmpdir}/caches.ini
     echo "[test]\n"\
     "Cache1 = http://localhost:6001\n"\
     "[offline]\n"\
-    "Cache4 = http://localhost:6000" > ${tmpdir}/caches.ini
+    "Cache4 = http://localhost:6000" > caches.ini
 }
 
 process p0 {
-    broadcaster -cfg ${tmpdir}/caches.ini --enforce
+    ${broadcaster} -cfg caches.ini --enforce
 } -start
 
 server s1 {

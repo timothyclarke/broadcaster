@@ -1,16 +1,14 @@
 varnishtest "Verify simple requests."
 
 shell {
-    rm -rf ${tmpdir}/caches.ini
-    touch ${tmpdir}/caches.ini
     echo "[test]\n"\
     "Cache1 = http://localhost:6001\n"\
     "Cache2 = http://localhost:6002\n"\
-    "Cache3 = http://localhost:6003" > ${tmpdir}/caches.ini
+    "Cache3 = http://localhost:6003" > caches.ini
 }
 
 process p0 {
-    broadcaster -cfg ${tmpdir}/caches.ini
+    ${broadcaster} -cfg caches.ini
 } -start
 
 server s1 {

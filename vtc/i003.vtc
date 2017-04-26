@@ -5,15 +5,14 @@
 varnishtest "Verify configuration reload."
 
 # Prepare some configuration.
-# We start with a faulty configuration, set the port to 6000 initially
-# while varnish is configured on 6001.
+# We start with a faulty configuration
 shell {
-    echo "[test]\n"\
-    "Cache1 = http://localhost:6000" > caches.ini
+    echo "[test]"				> nodes.conf
+    echo "Cache1 = http://${bad_ip}:80"		>> nodes.conf
 }
 
 process p0 {
-    ${broadcaster} -cfg caches.ini --enforce
+    ${broadcaster} -cfg nodes.conf --enforce
 } -start
 
 server s1 {
@@ -23,7 +22,7 @@ server s1 {
 
 } -start
 
-varnish v1 -arg "-a :6001" -vcl {
+varnish v1 -vcl {
 
     backend b1 {
                .host = "${s1_addr}";
@@ -49,8 +48,9 @@ client c1 -connect 127.0.0.1:8088 {
 # Rewrite the config file with a valid cache and signal
 # the broadcaster to reload.
 shell {
-    rm -f caches.ini
-    echo "[test]\nCache1 = http://localhost:6001" > caches.ini
+    rm -f nodes.conf
+    echo "[test]"					> nodes.conf
+    echo "Cache1 = http://${v1_addr}:${v1_port}"	>> nodes.conf
     kill -1 ${p0_pid}
 }
 

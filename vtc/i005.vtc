@@ -1,0 +1,82 @@
+varnishtest "More reload tests"
+
+server s1 {
+	rxreq
+	expect req.url == "/1"
+	txresp
+
+	rxreq
+	expect req.url == "/2"
+	txresp
+
+	rxreq
+	expect req.url == "/2_bis"
+	txresp
+} -start
+
+server s2 {
+	rxreq
+	expect req.url == "/2"
+	txresp
+
+	rxreq
+	expect req.url == "/2_bis"
+	txresp
+
+	rxreq
+	expect req.url == "/3"
+	txresp
+} -start
+
+shell {
+	echo "Cache1 = http://${s1_addr}:${s1_port}" > nodes.conf
+}
+
+process p0 {
+	${broadcaster} -cfg nodes.conf
+} -start
+
+delay 1
+
+client c1 -connect "localhost 8088" {
+	txreq -url "/1" -hdr "host: foo"
+	rxresp
+	expect resp.status == 200
+} -run
+
+shell {
+	echo "Cache1 = http://${s1_addr}:${s1_port}" > nodes.conf
+	echo "Cache2 = http://${s2_addr}:${s2_port}" >> nodes.conf
+	kill -1 ${p0_pid}
+}
+
+client c1 -connect "localhost 8088" {
+	txreq -url "/2" -hdr "host: foo"
+	rxresp
+	expect resp.status == 200
+} -run
+
+shell {
+	# this reload should shail
+	echo "Cache1 = http://${bad_ip}:${s1_port}" > nodes.conf
+	echo "Cache2 = http://${bad_ip}:${s2_port}" >> nodes.conf
+	echo "garbage line" >> nodes.conf
+	kill -1 ${p0_pid}
+}
+
+client c1 -connect "localhost 8088" {
+	txreq -url "/2_bis" -hdr "host: foo"
+	rxresp
+	expect resp.status == 200
+} -run
+
+
+shell {
+	echo "Cache2 = http://${s2_addr}:${s2_port}" > nodes.conf
+	kill -1 ${p0_pid}
+}
+client c1 -connect "localhost 8088" {
+	txreq -url "/3" -hdr "host: foo"
+	rxresp
+	expect resp.status == 200
+} -run

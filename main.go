@@ -21,7 +21,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/mariusmagureanu/broadcaster/dao"
+	dao "github.com/timothyclarke/http-request-broadcaster/dao"
 )
 
 const (
@@ -41,7 +41,7 @@ var (
 	httpsPort     = commandLine.Int("https-port", 8443, "Broadcaster https port.")
 	grCount       = commandLine.Int("goroutines", 8, "Job handling goroutines pool. Higher is not implicitly better!")
 	reqRetries    = commandLine.Int("retries", 1, "Request retry times against a cache - should the first attempt fail.")
-	cachesCfgFile = commandLine.String("cfg", "", "Path pointing to the caches configuration file.")
+	cachesCfgFile = commandLine.String("cfg", "/caches.ini", "Path pointing to the caches configuration file.")
 	logFilePath   = commandLine.String("log-file", "", "Log file path.")
 	enforceStatus = commandLine.Bool("enforce", false, "Enforces the status code of a request to be the first encountered non-200 received from a cache. Disabled by default.")
 	enableLog     = commandLine.Bool("enable-log", false, "Switches logging on/off. Disabled by default.")

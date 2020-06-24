@@ -2,10 +2,10 @@ package dao
 
 import (
 	"encoding/json"
-	"github.com/mariusmagureanu/broadcaster/ini"
 	"io/ioutil"
 	"net/http"
 	"os"
+	ini "github.com/timothyclarke/http-request-broadcaster/ini"
 )
 
 type Cache struct {

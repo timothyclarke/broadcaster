@@ -192,6 +192,14 @@ func doRequest(cache dao.Cache) (int, error) {
 	reqString := cache.Address + cache.Item
 	r, err := http.NewRequest(cache.Method, reqString, nil)
 
+	// Preserve the headers
+	for k, v := range cache.Headers {
+	  r.Header.Set(k,strings.Join(v," "))
+	}
+	// The "Host" header is the hardest
+	r.Header.Set("X-Host", cache.Headers.Get("Host"))
+	r.Host = cache.Headers.Get("Host")
+
 	if err != nil {
 		return http.StatusInternalServerError, err
 	}
@@ -261,6 +269,10 @@ func reqHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
+	//for k, v := range r.Header {
+	//  sendToLogChannel(reqId, " ", k, " : ", strings.Join(v," "), "\n")
+	//}
+
 	if groupName == "" {
 		broadcastCaches = allCaches
 	} else {
@@ -290,6 +302,9 @@ func reqHandler(w http.ResponseWriter, r *http.Request) {
 		bc.Method = r.Method
 		bc.Item = r.URL.Path
 		bc.Headers = r.Header
+		if len(r.Host) != 0 {
+			bc.Headers.Add("Host", r.Host)
+		}
 
 		job := newJob(bc)
 		jobs[idx] = job
